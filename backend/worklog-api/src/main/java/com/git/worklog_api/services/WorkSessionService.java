@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class WorkSessionService {
@@ -32,6 +35,17 @@ public class WorkSessionService {
         workSessionRepository.save(workSession);
 
         return buildWorkSessionResponse(workSession);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WorkSessionResponse> listAll() {
+        List<WorkSession> workSessions = workSessionRepository.findAll();
+
+        List<WorkSessionResponse> workSessionResponses = new ArrayList<>();
+        workSessions.forEach(session ->
+                workSessionResponses.add(buildWorkSessionResponse(session)));
+
+        return workSessionResponses;
     }
 
     private void validateCreateRequest(CreateWorkSessionRequest dto) {
