@@ -6,11 +6,17 @@ import com.git.worklog_api.entities.WorkSession;
 import com.git.worklog_api.entities.enums.Category;
 import com.git.worklog_api.repositories.WorkSessionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.git.worklog_api.repositories.specification.WorkSessionSpecifications.hasCategory;
+import static com.git.worklog_api.repositories.specification.WorkSessionSpecifications.hasTag;
+import static com.git.worklog_api.repositories.specification.WorkSessionSpecifications.startAtBetween;
 
 @Service
 @RequiredArgsConstructor
@@ -38,8 +44,18 @@ public class WorkSessionService {
     }
 
     @Transactional(readOnly = true)
-    public List<WorkSessionResponse> listAll() {
-        List<WorkSession> workSessions = workSessionRepository.findAll();
+    public List<WorkSessionResponse> list(
+            LocalDateTime from,
+            LocalDateTime to,
+            String category,
+            String tag
+    ) {
+        Specification<WorkSession> specification =
+                hasCategory(category != null ? Category.fromValue(category) : null)
+                        .and(startAtBetween(from, to))
+                        .and(hasTag(tag));
+
+        List<WorkSession> workSessions = workSessionRepository.findAll(specification);
 
         List<WorkSessionResponse> workSessionResponses = new ArrayList<>();
         workSessions.forEach(session ->
