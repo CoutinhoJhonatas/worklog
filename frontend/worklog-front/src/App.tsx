@@ -1,33 +1,44 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import { fetchSessions } from './services/worklogApi';
+import type { WorkSession } from "./types/WorkSession";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [sessions, setSessions] = useState<WorkSession[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    fetchSessions()
+      .then(setSessions)
+      .finally(() => setLoading(false));
+      console.log(sessions);
+  }, []);
+
+  if (loading) {
+    return <p>Loading sessions...</p>
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div style={{ padding: 24 }}>
+      <h1>Worklog</h1>
+
+      <ul>
+        {sessions.map((session) => (
+          <li key={session.id} style={{ marginBottom: 12 }}>
+            <strong>{session.title}</strong>
+            <div>{session.category}</div>
+            <div>
+              {session.durationInMinutes
+                ? `${session.durationInMinutes} min`
+                : session.startAt}
+            </div>
+            <div>
+              {session.tags}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
     </>
   )
 }
